@@ -1,4 +1,6 @@
 const express = require('express');
+const fs = require('fs/promises');
+const path = require('path')
 
 const app = express();
 app.use(express.json());
@@ -14,3 +16,23 @@ app.get('/', (_request, response) => {
 app.listen(PORT, () => {
   console.log(`Ouvindo na porta ${PORT}`);
 });
+
+const talkerPath = path.resolve(__dirname, 'talker.json')
+
+const readFile = async () => {
+try {
+  const data = await fs.readFile(talkerPath);
+  return JSON.parse(data)
+} catch (error) {
+  console.log(error);
+}
+}
+
+app.get('/talker', async (req, res) => {
+  const talkerList = await readFile();
+  if(!talkerList) {
+    return res.status(200).send([]);
+  } else {
+    return res.status(200).send(talkerList)
+  }
+})
