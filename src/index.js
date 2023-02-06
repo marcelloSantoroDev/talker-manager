@@ -79,6 +79,16 @@ async (req, res) => {
   res.status(201).send(newTalker);
 });
 
+app.get('/talker/search', tokenValidations, async (req, res) => {
+  const { q } = req.query;
+  const talkerList = await readFile();
+  if (!q) {
+    return res.status(200).send(talkerList);
+  }
+  const search = talkerList.filter((talker) => talker.name.includes(q));
+  return res.status(200).send(search);
+});
+
 app.put('/talker/:id',
 tokenValidations,
 nameValidations,
