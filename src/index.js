@@ -97,3 +97,11 @@ async (req, res) => {
   await fs.writeFile(talkerPath, JSON.stringify(talkerList));
   res.status(200).send(talkerToEdit);
 });
+
+app.delete('/talker/:id', tokenValidations, async (req, res) => {
+const talkerId = Number(req.params.id);
+const talkerList = await readFile();
+const filteredList = talkerList.filter((talker) => talker.id !== talkerId);
+await fs.writeFile(talkerPath, JSON.stringify(filteredList));
+res.sendStatus(204);
+});
