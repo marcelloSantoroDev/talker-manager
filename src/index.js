@@ -28,6 +28,17 @@ try {
 }
 }
 
+app.get('/talker/:id', async (req, res) => {
+  const talkerId = Number(req.params.id);
+  const talkerList = await readFile();
+  const searchedTalker = talkerList.find((talker) => talker.id === talkerId);
+  if(!searchedTalker) {
+    return res.status(404).send({ "message": "Pessoa palestrante não encontrada" });
+  } else {
+    return res.status(200).send(searchedTalker);
+  }
+})
+
 app.get('/talker', async (req, res) => {
   const talkerList = await readFile();
   if(!talkerList) {
@@ -36,3 +47,5 @@ app.get('/talker', async (req, res) => {
     return res.status(200).send(talkerList)
   }
 })
+
+app.get('')
