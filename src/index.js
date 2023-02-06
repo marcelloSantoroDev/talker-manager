@@ -1,6 +1,7 @@
 const express = require('express');
 const fs = require('fs/promises');
-const path = require('path')
+const path = require('path');
+const crypto = require('crypto');
 
 const app = express();
 app.use(express.json());
@@ -28,6 +29,10 @@ try {
 }
 }
 
+const tokenGenerator = () => {
+  return crypto.randomBytes(8).toString('hex');
+};
+
 app.get('/talker/:id', async (req, res) => {
   const talkerId = Number(req.params.id);
   const talkerList = await readFile();
@@ -37,7 +42,7 @@ app.get('/talker/:id', async (req, res) => {
   } else {
     return res.status(200).send(searchedTalker);
   }
-})
+});
 
 app.get('/talker', async (req, res) => {
   const talkerList = await readFile();
@@ -46,6 +51,13 @@ app.get('/talker', async (req, res) => {
   } else {
     return res.status(200).send(talkerList)
   }
-})
+});
 
-app.get('')
+app.post('/login', async(req, res) => {
+  const { email, password } = req.body;
+  const validate = email && password;
+  if(validate){
+    const token = tokenGenerator();
+    return res.status(200).send({ "token": token });
+  }
+})
