@@ -2,6 +2,15 @@ const express = require('express');
 const fs = require('fs/promises');
 const path = require('path');
 const crypto = require('crypto');
+const {
+  loginValidations,
+  tokenValidations,
+  nameValidations,
+  ageValidations,
+  talkValidations,
+  rateValidations,
+  watchedAtValidations,
+} = require('./middlewares');
 
 const app = express();
 app.use(express.json());
@@ -31,26 +40,6 @@ try {
 
 const tokenGenerator = () => crypto.randomBytes(8).toString('hex');
 
-const validations = (req, res, next) => {
-  const { email, password } = req.body;
-  const regex = /\S+@\S+\.\S+/;
-  if (!email) {
-    return res.status(400).send({ message: 'O campo "email" é obrigatório' });
-  }
-  if (!password) {
-    return res.status(400).send({ message: 'O campo "password" é obrigatório' });
-  }
-  const checkPassword = password.length >= 6;
-  const checkEmail = regex.test(email);
-  if (!checkEmail) {
-    return res.status(400).send({ message: 'O "email" deve ter o formato "email@email.com"' });
-  }
-  if (!checkPassword) {
-    return res.status(400).send({ message: 'O "password" deve ter pelo menos 6 caracteres' });
-  }
-    next();
-};
-
 app.get('/talker/:id', async (req, res) => {
   const talkerId = Number(req.params.id);
   const talkerList = await readFile();
@@ -69,7 +58,23 @@ app.get('/talker', async (req, res) => {
     return res.status(200).send(talkerList);
 });
 
-app.post('/login', validations, async (req, res) => {
-    const token = tokenGenerator();
-    return res.status(200).send({ token });
+app.post('/login', loginValidations, async (req, res) => {
+  const token = tokenGenerator();
+  return res.status(200).send({ token });
+});
+
+app.post('/talker',
+tokenValidations,
+nameValidations,
+ageValidations,
+talkValidations,
+watchedAtValidations,
+rateValidations,
+async (req, res) => {
+  const talkerList = await readFile();
+  const newTalker = req.body;
+  newTalker.id = talkerList[talkerList.length - 1].id + 1;
+  talkerList.push(newTalker);
+  await fs.writeFile(talkerPath, JSON.stringify(talkerList));
+  res.status(201).send(newTalker);
 });
