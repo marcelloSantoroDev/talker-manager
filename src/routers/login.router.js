@@ -4,11 +4,8 @@ const router = express.Router();
 
 const { loginValidations } = require('../middlewares');
 
-const tokenGenerator = require('../tokenGenerator');
+const authController = require('./controllers/loginController');
 
-router.post('/', loginValidations, async (req, res) => {
-  const token = tokenGenerator();
-  return res.status(200).send({ token });
-});
+router.post('/', loginValidations, authController);
 
 module.exports = router;
