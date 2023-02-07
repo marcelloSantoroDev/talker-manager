@@ -1,36 +1,25 @@
 const express = require('express');
-const fs = require('fs/promises');
+
+const router = express.Router();
+
 const path = require('path');
-const tokenGenerator = require('./tokenGenerator');
-const readFile = require('./readFile');
+
+const fs = require('fs/promises');
+
+const readFile = require('../readFile');
+
 const {
-  loginValidations,
   tokenValidations,
   nameValidations,
   ageValidations,
   talkValidations,
   rateValidations,
   watchedAtValidations,
-} = require('./middlewares');
+} = require('../middlewares');
 
-const app = express();
-app.use(express.json());
+const talkerPath = path.resolve(__dirname, '../talker.json');
 
-const HTTP_OK_STATUS = 200;
-const PORT = '3000';
-
-// não remova esse endpoint, e para o avaliador funcionar
-app.get('/', (_request, response) => {
-  response.status(HTTP_OK_STATUS).send();
-});
-
-app.listen(PORT, () => {
-  console.log(`Ouvindo na porta ${PORT}`);
-});
-
-const talkerPath = path.resolve(__dirname, 'talker.json');
-
-app.get('/talker/search', tokenValidations, async (req, res) => {
+router.get('/search', tokenValidations, async (req, res) => {
   const { q } = req.query;
   const talkerList = await readFile();
   if (!q) {
@@ -40,7 +29,7 @@ app.get('/talker/search', tokenValidations, async (req, res) => {
   return res.status(200).send(search);
 });
 
-app.get('/talker/:id', async (req, res) => {
+router.get('/:id', async (req, res) => {
   const talkerId = Number(req.params.id);
   const talkerList = await readFile();
   const searchedTalker = talkerList.find((talker) => talker.id === talkerId);
@@ -50,7 +39,7 @@ app.get('/talker/:id', async (req, res) => {
     return res.status(200).send(searchedTalker);
 });
 
-app.get('/talker', async (req, res) => {
+router.get('/', async (req, res) => {
   const talkerList = await readFile();
   if (!talkerList) {
     return res.status(200).send([]);
@@ -58,12 +47,7 @@ app.get('/talker', async (req, res) => {
     return res.status(200).send(talkerList);
 });
 
-app.post('/login', loginValidations, async (req, res) => {
-  const token = tokenGenerator();
-  return res.status(200).send({ token });
-});
-
-app.post('/talker',
+router.post('/',
 tokenValidations,
 nameValidations,
 ageValidations,
@@ -79,7 +63,7 @@ async (req, res) => {
   res.status(201).send(newTalker);
 });
 
-app.put('/talker/:id',
+router.put('/:id',
 tokenValidations,
 nameValidations,
 ageValidations,
@@ -97,10 +81,12 @@ async (req, res) => {
   res.status(200).send(talkerToEdit);
 });
 
-app.delete('/talker/:id', tokenValidations, async (req, res) => {
+router.delete('/:id', tokenValidations, async (req, res) => {
 const talkerId = Number(req.params.id);
 const talkerList = await readFile();
 const filteredList = talkerList.filter((talker) => talker.id !== talkerId);
 await fs.writeFile(talkerPath, JSON.stringify(filteredList));
 res.sendStatus(204);
 });
+
+module.exports = router;
