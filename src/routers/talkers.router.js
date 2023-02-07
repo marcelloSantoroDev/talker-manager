@@ -18,7 +18,7 @@ const {
   talkValidations,
   rateValidations,
   watchedAtValidations,
-} = require('../middlewares');
+} = require('../utils/middlewares');
 
 router.get('/search', tokenValidations, searchController);
 

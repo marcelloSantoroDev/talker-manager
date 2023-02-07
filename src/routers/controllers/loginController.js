@@ -1,4 +1,4 @@
-const tokenGenerator = require('../../tokenGenerator');
+const tokenGenerator = require('../../utils/tokenGenerator');
 
 const authController = async (req, res) => {
   const token = tokenGenerator();
