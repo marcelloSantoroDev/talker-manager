@@ -2,7 +2,7 @@ const path = require('path');
 
 const fs = require('fs/promises');
 
-const readFile = require('../../readFile');
+const readFile = require('../../utils/readFile');
 
 const talkerPath = path.resolve(__dirname, '../../talker.json');
 
