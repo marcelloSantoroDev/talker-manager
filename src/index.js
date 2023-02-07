@@ -1,7 +1,8 @@
 const express = require('express');
 const fs = require('fs/promises');
 const path = require('path');
-const crypto = require('crypto');
+const tokenGenerator = require('./tokenGenerator');
+const readFile = require('./readFile');
 const {
   loginValidations,
   tokenValidations,
@@ -28,17 +29,6 @@ app.listen(PORT, () => {
 });
 
 const talkerPath = path.resolve(__dirname, 'talker.json');
-
-const readFile = async () => {
-try {
-  const data = await fs.readFile(talkerPath);
-  return JSON.parse(data);
-} catch (error) {
-  console.log(error);
-}
-};
-
-const tokenGenerator = () => crypto.randomBytes(8).toString('hex');
 
 app.get('/talker/search', tokenValidations, async (req, res) => {
   const { q } = req.query;
@@ -99,11 +89,10 @@ rateValidations,
 async (req, res) => {
   const talkerList = await readFile();
   const talkerToEdit = req.body;
-  const talkerId = req.params.id;
-  const index = talkerList.findIndex((talker) => talker.id === Number(talkerId));
-  console.log(index);
+  const talkerId = Number(req.params.id);
+  const index = talkerList.findIndex((talker) => talker.id === talkerId);
   talkerList.splice(index, 1, talkerToEdit);
-  talkerList[index].id = Number(talkerId);
+  talkerList[index].id = talkerId;
   await fs.writeFile(talkerPath, JSON.stringify(talkerList));
   res.status(200).send(talkerToEdit);
 });
