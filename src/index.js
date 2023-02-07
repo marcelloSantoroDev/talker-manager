@@ -40,6 +40,16 @@ try {
 
 const tokenGenerator = () => crypto.randomBytes(8).toString('hex');
 
+app.get('/talker/search', tokenValidations, async (req, res) => {
+  const { q } = req.query;
+  const talkerList = await readFile();
+  if (!q) {
+    return res.status(200).send(talkerList);
+  }
+  const search = talkerList.filter((talker) => talker.name.includes(q));
+  return res.status(200).send(search);
+});
+
 app.get('/talker/:id', async (req, res) => {
   const talkerId = Number(req.params.id);
   const talkerList = await readFile();
@@ -77,16 +87,6 @@ async (req, res) => {
   talkerList.push(newTalker);
   await fs.writeFile(talkerPath, JSON.stringify(talkerList));
   res.status(201).send(newTalker);
-});
-
-app.get('/talker/search', tokenValidations, async (req, res) => {
-  const { q } = req.query;
-  const talkerList = await readFile();
-  if (!q) {
-    return res.status(200).send(talkerList);
-  }
-  const search = talkerList.filter((talker) => talker.name.includes(q));
-  return res.status(200).send(search);
 });
 
 app.put('/talker/:id',
